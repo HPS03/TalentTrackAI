@@ -1,0 +1,54 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# Creates the AI service, the Spring Boot API and the React static site.
+# MySQL is NOT provided by Render - create a free MySQL on Aiven (or Railway)
+# and paste its connection details when Render asks for DB_URL / DB_USERNAME / DB_PASSWORD.
+services:
+  - type: web
+    name: talenttrack-ai
+    runtime: docker
+    rootDir: ai-service
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: WORKERS
+        value: "1"
+
+  - type: web
+    name: talenttrack-api
+    runtime: docker
+    rootDir: backend
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DB_URL            # jdbc:mysql://HOST:PORT/defaultdb?sslMode=REQUIRED
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: AI_SERVICE_URL    # https://talenttrack-ai.onrender.com
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS  # https://talenttrack-web.onrender.com
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: SEED_DEMO_DATA
+        value: "true"
+      - key: JAVA_OPTS
+        value: "-XX:MaxRAMPercentage=70 -XX:+UseSerialGC -Xss512k"
+
+  - type: web
+    name: talenttrack-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL      # https://talenttrack-api.onrender.com
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

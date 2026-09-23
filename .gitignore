@@ -1,0 +1,17 @@
+# Java
+backend/target/
+backend/uploads/
+*.class
+# Node
+frontend/node_modules/
+frontend/dist/
+# Python
+ai-service/.venv/
+__pycache__/
+.pytest_cache/
+# Env & IDE
+.env
+.idea/
+.vscode/
+*.iml
+.DS_Store
